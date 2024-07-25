@@ -23,5 +23,35 @@ model Employees {
   active    Boolean  @default(true)
   admin     Boolean  @default(false)
 
+  reservations Reservations[]
+
   @@map("employees")
+}
+
+model Rooms {
+  id        String   @id @default(uuid())
+  name      String
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservations Reservations[]
+
+  @@map("rooms")
+}
+
+model Reservations {
+  id         String   @id @default(uuid())
+  startTime  DateTime
+  endTime    DateTime
+  purpose    String?
+  createdAt  DateTime
+  updatedAt  DateTime
+  employeeId String
+  roomId     String
+
+  employee Employees @relation(fields: [employeeId], references: [id])
+  room     Rooms     @relation(fields: [roomId], references: [id])
+
+  @@map("reservations")
 }

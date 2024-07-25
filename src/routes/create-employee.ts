@@ -14,7 +14,7 @@ export async function createEmployee(app: FastifyInstance) {
                 isAdmin: z.boolean().optional()
             })
         },
-    }, async (request) => {
+    }, async (request, reply) => {
         const { name, email, password, isAdmin } = request.body
 
         // Algumas limitações 
@@ -23,21 +23,24 @@ export async function createEmployee(app: FastifyInstance) {
         // if isAdmin true, disparar email pra chefe (conta master) com código
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        if (isAdmin) {
-            // enviar email
-            return
+        // if (isAdmin) {
+        //     // enviar email
+        //     return
+        // }
+
+        try {
+            const employee = await prisma.employees.create({
+                data: {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    admin: isAdmin
+                }
+            })
+
+            reply.send({ success: true, employee })
+        } catch (error) {
+            reply.status(400).send({ error: "User with this email already exists" })
         }
-
-        const employee = await prisma.employees.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                admin: isAdmin
-            }
-        })
-
-
-        return { employee }
     })
 }
